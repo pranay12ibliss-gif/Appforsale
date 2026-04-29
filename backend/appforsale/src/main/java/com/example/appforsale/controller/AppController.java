@@ -535,17 +535,61 @@ public class AppController {
     @Autowired private AppRepository appRepository;
     @Autowired private NotificationRepository notificationRepository;
 
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadApp(@RequestBody App app) {
+    // @PostMapping("/upload")
+    // public ResponseEntity<?> uploadApp(@RequestBody App app) {
+    //     app.setStatus("PENDING");
+
+    //     // ✅ If imageUrls list has items, set first one as imageUrl too (for backward compat)
+    //     if (app.getImageUrls() != null && !app.getImageUrls().isEmpty()) {
+    //         app.setImageUrl(app.getImageUrls().get(0));
+    //     }
+
+    //     App saved = appRepository.save(app);
+
+    //     Notification adminNotif = new Notification();
+    //     adminNotif.setTitle("New App Submitted: " + app.getTitle());
+    //     adminNotif.setMessage(
+    //         "\"" + app.getTitle() + "\" submitted by " + app.getOwnerName() +
+    //         " (" + app.getOwnerEmail() + ") — Category: \"" + app.getCategory() + "\"" +
+    //         " — Price: ₹" + (app.getPrice() != null ? app.getPrice().longValue() : 0)
+    //     );
+    //     adminNotif.setType("SUBMISSION");
+    //     adminNotif.setRole("ADMIN");
+    //     adminNotif.setRead(false);
+    //     notificationRepository.save(adminNotif);
+
+    //     return ResponseEntity.ok(Map.of("message", "App submitted", "id", saved.getId()));
+    // }
+@PostMapping("/upload")
+public ResponseEntity<?> uploadApp(@RequestBody App app) {
+
+    // ✅ ముందు — always PENDING
+    // app.setStatus("PENDING");
+
+    // ✅ తర్వాత — frontend నుండి status వస్తే use చేయి, లేకపోతే PENDING
+    if (app.getStatus() == null || app.getStatus().isBlank()) {
         app.setStatus("PENDING");
+    }
+    // admin "approved" పంపితే అలాగే save అవుతుంది
 
-        // ✅ If imageUrls list has items, set first one as imageUrl too (for backward compat)
-        if (app.getImageUrls() != null && !app.getImageUrls().isEmpty()) {
-            app.setImageUrl(app.getImageUrls().get(0));
-        }
+    // ✅ If imageUrls list has items, set first one as imageUrl too
+    if (app.getImageUrls() != null && !app.getImageUrls().isEmpty()) {
+        app.setImageUrl(app.getImageUrls().get(0));
+    }
 
-        App saved = appRepository.save(app);
+    App saved = appRepository.save(app);
 
+    // ✅ Admin direct publish అయితే notification వేరేగా పంపాలి
+    if ("APPROVED".equalsIgnoreCase(app.getStatus())) {
+        Notification adminLog = new Notification();
+        adminLog.setTitle("App Published: " + app.getTitle());
+        adminLog.setMessage("\"" + app.getTitle() + "\" was directly published by admin.");
+        adminLog.setType("APPROVED");
+        adminLog.setRole("ADMIN");
+        adminLog.setRead(false);
+        notificationRepository.save(adminLog);
+    } else {
+        // User submit — admin కి review request
         Notification adminNotif = new Notification();
         adminNotif.setTitle("New App Submitted: " + app.getTitle());
         adminNotif.setMessage(
@@ -557,10 +601,10 @@ public class AppController {
         adminNotif.setRole("ADMIN");
         adminNotif.setRead(false);
         notificationRepository.save(adminNotif);
-
-        return ResponseEntity.ok(Map.of("message", "App submitted", "id", saved.getId()));
     }
 
+    return ResponseEntity.ok(Map.of("message", "App submitted", "id", saved.getId()));
+}
     @GetMapping
     public ResponseEntity<List<App>> getApprovedApps() {
         return ResponseEntity.ok(appRepository.findByStatus("APPROVED"));

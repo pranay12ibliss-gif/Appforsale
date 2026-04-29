@@ -6455,11 +6455,17 @@ export default function HomeScreen({ navigation, route }) {
   const { apps, refreshApps, lastRefresh } = useMarketplace();
 
   // ✅ All approved apps
-  const approvedApps = useMemo(() => {
-    return (apps || []).filter(item =>
-      String(item.status || '').trim().toLowerCase() === 'approved'
-    );
-  }, [apps]);
+  // const approvedApps = useMemo(() => {
+  //   return (apps || []).filter(item =>
+  //     String(item.status || '').trim().toLowerCase() === 'approved'
+  //   );
+  // }, [apps]);
+  // తర్వాత — ✅ newest first
+const approvedApps = useMemo(() => {
+  return (apps || [])
+    .filter(item => String(item.status || '').trim().toLowerCase() === 'approved')
+    .sort((a, b) => b.id - a.id); 
+}, [apps]);
 
   // Hero = first approved app
   const heroApp            = approvedApps[0] || null;

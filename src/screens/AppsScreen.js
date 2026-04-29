@@ -7661,11 +7661,17 @@ export default function AppsScreen({ navigation, route }) {
   const [savedIds,         setSavedIds]         = useState([]);
   const [activeIndex,      setActiveIndex]      = useState(0);
 
+  // const approvedApps = useMemo(() => {
+  //   return (apps || []).filter(item =>
+  //     String(item?.status ?? '').trim().toLowerCase() === 'approved'
+  //   );
+  // }, [apps]);
+
   const approvedApps = useMemo(() => {
-    return (apps || []).filter(item =>
-      String(item?.status ?? '').trim().toLowerCase() === 'approved'
-    );
-  }, [apps]);
+  return (apps || [])
+    .filter(item => String(item?.status ?? '').trim().toLowerCase() === 'approved')
+    .sort((a, b) => b.id - a.id); 
+}, [apps]);
 
   const categories = useMemo(() => {
     const unique = [...new Set(approvedApps.map(item => item.category))];
