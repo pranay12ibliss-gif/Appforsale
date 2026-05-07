@@ -479,7 +479,7 @@
 
 // utils/apiService.js
 
-const BASE_URL = 'http://192.168.1.3:8085/api';
+const BASE_URL = 'http://192.168.1.6:8085/api';
 
 const headers = {
   'Content-Type': 'application/json',
