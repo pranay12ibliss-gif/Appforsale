@@ -677,12 +677,12 @@ function useInitialRoute() {
         const count = await fetchAdminExistsApi();
         console.log('📱 Admin count in DB:', count);
 
-        if (count > 0) {
-          // Admin already exists in DB → setup skip
+        if (count >= 3) {
+          // 3 admins complete → setup screen skip
           await markAdminSetupDone();
           setInitialRoute('SignIn');
         } else {
-          // No admin in DB → setup చేయాలి
+          // 0, 1, or 2 → setup is allowed
           setInitialRoute('AdminSetup');
         }
       } catch (e) {

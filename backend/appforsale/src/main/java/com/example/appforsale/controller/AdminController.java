@@ -393,6 +393,14 @@ public class AdminController {
     @PostMapping("/setup")
     public ResponseEntity<Map<String, Object>> setupAdmin(@RequestBody AdminDto dto) {
         Map<String, Object> response = new HashMap<>();
+        
+        long adminCount = adminService.getAdminCount();
+        if (adminCount >= 3) {
+            response.put("message", "Admin limit reached. Maximum 3 admins allowed.");
+            response.put("success", false);
+            return ResponseEntity.status(403).body(response);
+        }
+        
         boolean exists = adminService.adminExistsByEmail(dto.getEmail());
         if (exists) {
             response.put("message", "Admin already exists");
